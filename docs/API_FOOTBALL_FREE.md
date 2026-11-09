@@ -103,3 +103,11 @@ O produto mostra carimbo real por recurso; falhas mantêm timestamp anterior e s
 Em vazamento: revogue a chave API-Football na conta, substitua o binding no secret manager e reinicie workers; confirme que logs/bundles não a contêm, revise consumo inesperado e reconcilie `/status` na próxima janela. Não zere as reservas do dia para aparentar saldo. Rotacione separadamente CRON_SECRET/service_role caso tenham sido expostos; não reutilize segredos entre serviços. Restrinja egress ao host API fixo e ao Supabase do projeto, além dos destinos normais de dependências. Não exponha a rota administrativa para “facilitar o cron”.
 
 Para adicionar competições, amplie os alvos/nome/tipo em `mappers.ts` e a constraint `target` em migration aditiva, valide `/leagues` e os recursos da temporada, recalcule custo e execute testes de quota/persistência. Nunca cadastre um ID presumido nem aceite URL de fornecedor enviada por usuário.
+
+## Descoberta inicial sem SPORTS_SEASON
+
+`POST /api/internal/sports-catalogue` permite consultar o catálogo antes de escolher o ano. Exige `Authorization: Bearer <CRON_SECRET>` e JSON estrito `{"confirmCost":true}`. Não chame automaticamente no onboarding de usuários ou no navegador. Somente o operador deve ativá-lo, após aprovar o custo.
+
+Custo máximo por consulta sem cache: uma chamada a `/leagues?country=Brazil`, debitada do orçamento diário, e até uma chamada a `/status` quando necessário (não debitada do dia conforme contrato, mas contabilizada no limite por minuto). Cada endpoint usa uma única tentativa, sem retry automático. Respostas bem-sucedidas são reutilizadas por 24 horas com o carimbo original; o cache não prova que o serviço esteja disponível no momento.
+
+Usa a mesma lease exclusiva, reservas SQL, circuit breaker e reconciliação do sincronizador. O resultado e erros sanitizados são auditados em `sync_runs`, recurso `free:catalogue`. Não exige nova migration e não importa times ou partidas. O campo `seasonAccess: "not_verified"` é deliberado: `advertised_seasons` indica anos anunciados no catálogo, sem confirmar permissão da conta Free. Escolha uma temporada explicitamente, configure `SPORTS_SEASON` e valide recursos/cobertura no ciclo real autorizado antes de anunciar dados disponíveis. A sincronização normal continua recusando um ano ausente.

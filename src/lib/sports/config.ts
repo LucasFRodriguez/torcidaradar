@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-export function sportsConfig() {
+export function sportsBudgetConfig() {
   return z
     .object({
       daily: z.coerce.number().int().min(1).max(100),
@@ -9,7 +9,6 @@ export function sportsConfig() {
       minuteLimit: z.coerce.number().int().min(1).max(10),
       operationalReserve: z.coerce.number().int().min(0).max(99),
       priorityReserve: z.coerce.number().int().min(0).max(20),
-      season: z.coerce.number().int().min(2000).max(2100),
     })
     .refine(
       (c) =>
@@ -25,6 +24,17 @@ export function sportsConfig() {
       minuteLimit: process.env.API_FOOTBALL_MINUTE_LIMIT ?? 10,
       operationalReserve: process.env.API_FOOTBALL_OPERATIONAL_RESERVE ?? 30,
       priorityReserve: process.env.API_FOOTBALL_PRIORITY_RESERVE ?? 6,
-      season: process.env.SPORTS_SEASON,
     });
+}
+
+export function sportsConfig() {
+  return {
+    ...sportsBudgetConfig(),
+    season: z.coerce
+      .number()
+      .int()
+      .min(2000)
+      .max(2100)
+      .parse(process.env.SPORTS_SEASON),
+  };
 }

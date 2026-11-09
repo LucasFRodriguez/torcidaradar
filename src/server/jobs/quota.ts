@@ -8,7 +8,7 @@ import type {
   QuotaObservation,
 } from "@/lib/sports/provider";
 import { ProviderError } from "@/lib/sports/errors";
-import { sportsConfig } from "@/lib/sports/config";
+import { sportsBudgetConfig } from "@/lib/sports/config";
 const reservation = z.object({
   allowed: z.boolean(),
   reason: z.string().optional(),
@@ -19,7 +19,7 @@ export class QuotaManager implements QuotaControl {
   constructor(
     private db: SupabaseClient,
     private owner: string,
-    private config: ReturnType<typeof sportsConfig>,
+    private config: ReturnType<typeof sportsBudgetConfig>,
   ) {}
   async reserve(endpoint: Endpoint, priority: Priority) {
     const { data, error } = await this.db.rpc("reserve_sports_request", {

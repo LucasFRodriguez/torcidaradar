@@ -14,6 +14,16 @@ test("visitante: páginas privadas protegidas, API sem identidade, cron e CSRF",
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/login/);
   expect((await request.get("/api/internal/sports-status")).status()).toBe(401);
+  expect((await request.get("/api/internal/sports-catalogue")).status()).toBe(
+    405,
+  );
+  expect(
+    (
+      await request.post("/api/internal/sports-catalogue", {
+        data: { confirmCost: true },
+      })
+    ).status(),
+  ).toBe(401);
   const privateResponse = await request.get("/api/me/favorites");
   expect([401, 503]).toContain(privateResponse.status());
   expect(await privateResponse.text()).not.toContain("stack");

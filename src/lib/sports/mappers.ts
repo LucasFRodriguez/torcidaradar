@@ -17,7 +17,7 @@ const normalize = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
-export function discoverCompetitions(leagues: League[], season: number) {
+export function discoverCompetitions(leagues: League[], season?: number) {
   if (!leagues.length) throw new ProviderError("empty_unverified");
   return targets.map((target) => {
     const found = leagues.filter(
@@ -40,7 +40,7 @@ export function discoverCompetitions(leagues: League[], season: number) {
     const year = l.seasons.find((s) => s.year === season);
     return {
       target: target.key,
-      state: year ? "advertised" : "unavailable",
+      state: season === undefined || year ? "advertised" : "unavailable",
       provider_id: l.league.id,
       name: l.league.name,
       type: l.league.type,

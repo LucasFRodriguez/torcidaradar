@@ -41,6 +41,7 @@ export interface FootballDataProvider {
 export type SportsProvider = FootballDataProvider;
 type Dependencies = {
   quota: QuotaControl;
+  maxAttempts?: 1 | 2 | 3;
   fetch?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
   random?: () => number;
@@ -120,7 +121,7 @@ export class ApiFootball implements FootballDataProvider {
       throw new ProviderError("parameters");
     const url = new URL("https://v3.football.api-sports.io/" + endpoint);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < (this.deps.maxAttempts ?? 3); attempt++) {
       const reservation = await this.deps.quota.reserve(endpoint, priority);
       let observation: QuotaObservation = { code: "network" };
       let result: T | undefined;
@@ -217,7 +218,7 @@ export class ApiFootball implements FootballDataProvider {
         !["rate_limit", "unavailable", "timeout", "network"].includes(
           failure.code,
         ) ||
-        attempt === 2
+        attempt === (this.deps.maxAttempts ?? 3) - 1
       )
         throw failure;
       const delay = Math.max(

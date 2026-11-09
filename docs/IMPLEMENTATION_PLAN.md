@@ -37,3 +37,11 @@ E. Qualidade: lint, tipos, unidade, integração SQL, E2E/acessibilidade/respons
 - Inspeção visual: capturas desktop e 375px de landing/dashboard revisadas localmente, monogramas próprios e design sóbrio.
 
 - Tooling final: ESLint 10 com plugins oficiais Next/TypeScript/hooks compatíveis, evitando ESLint 9 fora de suporte e peers incompatíveis do pacote agregado. Lockfile reinstalado por npm ci; audit sem vulnerabilidades após override das versões afetadas de minimatch. GitHub Actions oficiais consultadas em refs v7 e fixadas por SHA; execução remota de CI ainda não ocorreu.
+
+## Configuração remota e catálogo inicial — 2026-11-09
+
+Monitor protegido da instalação Vercel respondeu após liberação do domínio: chave esportiva presente, integração bloqueada por `SEASON_OR_BUDGET_NOT_CONFIGURED`, nenhuma sincronização registrada. Essa leitura consultou somente o banco interno; não validou a chave na API-Football.
+
+Preparada localmente a rota POST autenticada `sports-catalogue`, independente de SPORTS_SEASON, com confirmação de custo, quota/lease compartilhadas, uma tentativa por endpoint, cache 24h e auditoria sanitizada. Temporadas anunciadas continuam explicitamente sem acesso verificado. Sem nova migration, importação de times, consulta real à API ou deploy nesta etapa.
+
+Validação: lint e tipos sem erros; 49 testes unitários, 40 de integração PostgreSQL e 7 E2E (5 desenvolvimento, 2 build de produção) passaram; build e fronteira dos bundles aprovados. Varredura dos arquivos alterados não encontrou os valores das credenciais disponíveis no ambiente. Publicação e ativação do catálogo aguardam autorização do proprietário.

@@ -72,6 +72,8 @@ export function sportsClient(pg: PGlite, fail?: () => boolean): SupabaseClient {
         values: Record<string, unknown> = {},
         single = false,
         head = false;
+      let ordering = "",
+        rowLimit = "";
       const filters: { col: string; operator: string; value: unknown }[] = [];
       const execute = async () => {
         try {
@@ -99,6 +101,7 @@ export function sportsClient(pg: PGlite, fail?: () => boolean): SupabaseClient {
                 ? `update ${identifier(table)} set ${assignments}`
                 : `select to_jsonb(t) value from ${identifier(table)} t`;
             if (where.length) sql += " where " + where.join(" and ");
+            if (op === "read") sql += ordering + rowLimit;
             if (op === "update")
               sql += " returning to_jsonb(" + identifier(table) + ") value";
           }
@@ -137,6 +140,27 @@ export function sportsClient(pg: PGlite, fail?: () => boolean): SupabaseClient {
         eq: (col: string, value: unknown) => {
           filters.push({ col, operator: "=", value });
           return b;
+        },
+        gte: (col: string, value: unknown) => {
+          filters.push({ col, operator: ">=", value });
+          return b;
+        },
+        order: (col: string, opts: { ascending: boolean }) => {
+          ordering =
+            " order by " +
+            identifier(col) +
+            (opts.ascending ? " asc" : " desc");
+          return b;
+        },
+        limit: (n: number) => {
+          if (!Number.isSafeInteger(n) || n < 1)
+            throw new Error("Invalid limit");
+          rowLimit = " limit " + n;
+          return b;
+        },
+        maybeSingle: () => {
+          single = true;
+          return execute();
         },
         lt: (col: string, value: unknown) => {
           filters.push({ col, operator: "<", value });
