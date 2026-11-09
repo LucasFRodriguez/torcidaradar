@@ -1,0 +1,13 @@
+body {
+  font: 18px system-ui;
+  color: #202b29;
+  background: #fafbf9;
+  padding: 10vw;
+}
+main {
+  max-width: 600px;
+  margin: auto;
+}
+a {
+  color: #0f766e;
+}

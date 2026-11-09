@@ -1,0 +1,14 @@
+# Operação e gates antes de produção
+
+Nenhum deploy é autorizado por esta documentação. Solicitar autorização explícita somente depois de validar staging e checklist.
+
+1. Projeto Supabase dedicado, região/contrato de dados revisados, migrations aplicadas e teste A/B/anônimo também pelo endpoint remoto. Não executar reset, seed fictício ou migração destrutiva em produção.
+2. Auth SMTP, confirmação de e-mail, senha mínima, leaked password protection quando plano permitir, limites por IP no provedor e edge, allowlist exata. Configurar proxy confiável no host e rejeitar Host/forwarded host inesperado. Origin do app exata HTTPS. Não confiar em X-Forwarded-For arbitrário.
+3. Chaves separadas staging/prod em secret manager, menor privilégio. A chave service_role do SDK é ampla, isolada em módulo server-only; considere worker/role Postgres dedicado com grants apenas nas tabelas de sync/limite antes de expandir operação. Nunca entrar em logs/bundles. Rotação coordenada com invalidação de sessão se necessário.
+4. Contrato/licença da API-Football, orçamento e cobertura por temporada verificados; agendador POST autenticado e alertas de sync failed/stale. Job pode levar até 300s: host/worker precisa suportar a duração; dividir por competição num worker persistente se host não suportar.
+5. HTTPS, HSTS (sem includeSubDomains até avaliar domínios), CSP e cache observados no host final. Proibir cache CDN de respostas dinâmicas, RSC e Set-Cookie. Revisar CSP quando mudar infraestrutura. Rate limiting PostgreSQL não é WAF; proteção de rede/volume exige edge.
+6. Backup/PITR do PostgreSQL conforme plano. Definir RPO/RTO, exportar configuração Auth/SMTP sem expor segredos, ensaiar restauração em projeto isolado e testar constraints, RLS e login. Nunca chamar um backup de válido sem restauração testada.
+7. Logs com códigos/contagens, acesso de operadores mínimo e auditado, retenção proposta 14 dias; TTL/limpeza de sync_runs deve ser agendada no ambiente (por exemplo 30 dias). Limites velhos são limpos pelo job; monitorar crescimento em caso de indisponibilidade prolongada. Alertas para indisponibilidade, 429 e erros de sync sem payload pessoal.
+8. Exclusão: fila `account_deletion_requests`; verificar pedido/identidade em ferramenta administrativa restrita, excluir usuário Auth via API Admin segura (cascades removem perfil/favoritos/preferências/pedido), registrar atendimento sem PII desnecessária. Não marcar completed antes de concluir. Definir SLA, canal e revisão jurídica nas páginas legais; hoje são blockers.
+9. Revisar Dependabot, audit high/critical, CodeQL e secret scanning do GitHub quando disponíveis. Build e CI verdes não substituem pentest nem auditoria ASVS completa.
+10. Executar roteiro docs/VALIDATION.md, aprovar riscos, obter autorização do proprietário. Publicação cloud de ambiente de desenvolvimento não é deploy de produção.
